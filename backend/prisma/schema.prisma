@@ -35,7 +35,7 @@ enum UserRole {
 model File {
   id           Int       @id @default(autoincrement())
   name         String
-  data         Bytes
+  originalname String
   checksum     String
   encryptionKey String
   createdAt    DateTime  @default(now())
