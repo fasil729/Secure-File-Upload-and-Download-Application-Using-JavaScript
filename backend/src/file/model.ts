@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 export class File {
   id?: number;
   name: string;
-  data: Buffer;
+  originalname: string;
   checksum: string;
   encryptionKey: string;
   senderId: number;
@@ -13,9 +13,9 @@ export class File {
   createdAt?: Date;
   updatedAt?: Date;
 
-  constructor(name: string, data: Buffer, checksum: string, encryptionKey: string, senderId: number, receiverId: number, contentType: string, size: number) {
+  constructor(name: string, originalname: string, checksum: string, encryptionKey: string, senderId: number, receiverId: number, contentType: string, size: number) {
     this.name = name;
-    this.data = data;
+    this.originalname = originalname;
     this.checksum = checksum;
     this.encryptionKey = encryptionKey;
     this.senderId = senderId;

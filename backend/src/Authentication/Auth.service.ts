@@ -58,12 +58,6 @@ export class AuthService {
          lastName: createUserDto.lastName,
         hash: hash,
         role: 'USER',
-        costumers: {
-          create:{
-            phone:CustomerDto.phone,
-            account_no:CustomerDto.account_no
-          }
-        }
         },
       
     });
@@ -142,9 +136,7 @@ async getProfile(id:number){
     where: {
       id,
     },
-    include: {
-      costumers: true
-    }
+    
   })
   return user;
 
@@ -185,7 +177,7 @@ async getProfile(id:number){
     const tokens = await this.GetToken(
       id,
     dtouser.email,
-    "COSTMER"
+    "USER"
     );
     await this.updateRtHash(id, tokens.refresh_token);
     return tokens;

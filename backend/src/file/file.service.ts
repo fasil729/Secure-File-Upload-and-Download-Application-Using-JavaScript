@@ -9,11 +9,11 @@ export class FileService {
       return this.prisma.file.findUnique({ where: { id } });
     }
   
-    async createFile(name: string, data: Buffer, senderId: number, receiverId: number, contentType: string, size: number): Promise<File> {
+    async createFile(name: string, originalname: string, senderId: number, receiverId: number, contentType: string, size: number): Promise<File> {
       return this.prisma.file.create({
         data: {
           name,
-          data,
+          originalname,
           checksum: 'TODO', // Compute checksum here
           encryptionKey: 'TODO', // Generate encryption key here
           senderId,
