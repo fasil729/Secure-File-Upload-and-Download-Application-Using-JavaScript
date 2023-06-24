@@ -12,7 +12,7 @@ import { Roles } from "src/decorators/role.auths";
 import { Role } from '../decorators/role.enum';
 import { FileFieldsInterceptor, FileInterceptor } from "@nestjs/platform-express/multer";
 import { ImageStorage } from "src/helper/photo.storage";
-import { diskStorage } from "multer";
+import { diskStorage, Multer } from "multer";
 import { Response } from "express";
 
 @Controller('insurance')
@@ -38,7 +38,7 @@ export class InsuranceController {
 createInsurance( @GetUser() userId:number,
 @Body() dto:CreateInsuranceDto,
 @Body() photo:CreateInsurancePhotoDto,
-@UploadedFiles() file: Array<Express.Multer.File>){
+@UploadedFiles() file: Array<Multer.File>){
     console.log(file, "here after create");
     photo.Document=`http://localhost:3000/insurance/${file["Document"]}`;
     
@@ -104,7 +104,7 @@ getInsurancebyAdminById(@Param('id',ParseIntPipe) id:number){
       { name: "telebirr_QR", maxCount: 1 },
      
     ],ImageStorage ))
-approveInsuranceByAdmin(@Param('id',ParseIntPipe) id:number,@Body() updateDto:UpdateByAdminInsurance,@UploadedFiles() file: Array<Express.Multer.File>){
+approveInsuranceByAdmin(@Param('id',ParseIntPipe) id:number,@Body() updateDto:UpdateByAdminInsurance,@UploadedFiles() file: Array<Multer.File>){
   updateDto.telebirr_QR=`http://localhost:3000/insurance/${file["telebirr_QR"][0].filename}`;
   return this.insurance.ApproveInsuranceBYAdmin(id,updateDto);}
 
