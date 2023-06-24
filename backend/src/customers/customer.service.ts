@@ -33,35 +33,35 @@ export class CustomerService {
 
 
   async  signup(dtoUser:CreateAuthDto,dtoCustomer:CreateCustomer) {
-    const hashs=await argon2.hash(dtoUser.password);
-    try {
-      const customer = await this.prisma.costumers.create({
-        data:{phone:dtoCustomer.phone,
-          account_no:dtoCustomer.account_no,
-          user:{
-            create:{
+    // const hashs=await argon2.hash(dtoUser.password);
+    // try {
+    //   const customer = await this.prisma.costumers.create({
+    //     data:{phone:dtoCustomer.phone,
+    //       account_no:dtoCustomer.account_no,
+    //       user:{
+    //         create:{
              
-              firstName:dtoUser.firstName,
-              lastName:dtoUser.lastName,
-              email:dtoUser.email,
-              hash:hashs,
-            }
-          }
+    //           firstName:dtoUser.firstName,
+    //           lastName:dtoUser.lastName,
+    //           email:dtoUser.email,
+    //           hash:hashs,
+    //         }
+    //       }
          
           
-        },
-      });
+    //     },
+    //   });
 
 
-      return customer;
+    //   return customer;
       
 
-    } catch (error) {
-      if (error.code === "P2002"&& error.meta?.target?.includes("email")) {
-        throw new ForbiddenException("Email is already taken");
-      }
+    // } catch (error) {
+    //   if (error.code === "P2002"&& error.meta?.target?.includes("email")) {
+    //     throw new ForbiddenException("Email is already taken");
+    //   }
      
-    }
+    // }
     
   }
 

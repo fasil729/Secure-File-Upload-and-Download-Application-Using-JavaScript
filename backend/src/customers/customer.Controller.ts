@@ -3,7 +3,7 @@ import { Controller, Delete, UseGuards,Post } from "@nestjs/common";
 import { CustomerService } from "./customer.service";
 import { AtGuards } from "src/Authentication/gaurds/at.guards";
 import { RolesGuard } from "src/Authentication/gaurds/role.gaurd";
-import { Role } from "@prisma/client";
+// import { Role } from "@prisma/client";
 import { Roles } from "src/decorators/role.auths";
 import { GetUserId } from "src/decorators";
 import { CreateCustomer } from "./dto/create.dto";
