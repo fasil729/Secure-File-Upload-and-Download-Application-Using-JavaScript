@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Define the User model
+model User {
+  id          Int      @id @default(autoincrement())
+  firstName  String
+  lastName   String
+  email      String            @unique
+  hash       String
+  hashRT     String ?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  role        UserRole @default(USER)
+  sentFiles   File[]   @relation("sentFiles")
+  receivedFiles File[]  @relation("receivedFiles")
+}
+
+// Define the UserRole enum
+enum UserRole {
+  ADMIN
+  USER
+}
+
+// Define the File model
+model File {
+  id           Int       @id @default(autoincrement())
+  name         String
+  data         Bytes
+  checksum     String
+  encryptionKey String
+  createdAt    DateTime  @default(now())
+  senderId     Int
+  receiverId   Int
+  sender       User      @relation("sentFiles", fields: [senderId], references: [id])
+  receiver     User      @relation("receivedFiles", fields: [receiverId], references: [id])
+  contentType  String
+  size         Int
+}
+
+
