@@ -87,7 +87,7 @@ export class FileController {
     // Set appropriate file permissions
     const filePath = path.join(__dirname, '..', 'filestorage', file.name);
     fs.writeFileSync(filePath, decryptedData);
-    res.download(filePath, file.originalName, (err) => {
+    res.download(filePath, file.originalname, (err) => {
       if (err) {
         throw new NotFoundException('File not found!');
       }
@@ -108,7 +108,7 @@ export class FileController {
       throw new NotFoundException('File not found!');
     }
     if (file.senderId !== user['id']) {
-      throwa UnauthorizedException('You are not authorized to delete this file!');
+      throw new UnauthorizedException('You are not authorized to delete this file!');
     }
 
     // Delete file from the database and file system
