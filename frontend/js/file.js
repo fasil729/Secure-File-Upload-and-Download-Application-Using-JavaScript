@@ -6,5 +6,7 @@ fetch('http://localhost:3000/file/received', {
         "Content-Type": "application/json",
     }
 }).then(()=>response.json()).then(function(data){
-    console.log(data);
+    if (data.statusCode == 200){
+        return 
+    }
 })

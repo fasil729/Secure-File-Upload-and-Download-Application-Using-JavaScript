@@ -1,9 +1,10 @@
 /* eslint-disable prettier/prettier */
-import { UserRole, User} from "@prisma/client";
+import { User, UserRole } from "@prisma/client";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { Observable } from "rxjs";
 import { ROLES_KEY } from "src/decorators/role.auths";
+import { Role } from "src/decorators/role.enum";
 
 
 

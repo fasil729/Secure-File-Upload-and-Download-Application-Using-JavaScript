@@ -8,7 +8,7 @@ import { GetUser, GetUserId } from 'src/decorators';
 
 import {  AtGuards } from './gaurds/at.guards';
 import { RolesGuard } from './gaurds/role.gaurd';
-import { CreateCustomer } from 'src/customers/dto/create.dto';
+
 
 @Controller('user')
 export class AuthController{
@@ -21,8 +21,8 @@ export class AuthController{
   }
 
   @Post('customer/signup')
-  Customersignup(@Body() dtouser:CreateAuthDto,@Body() dtocustomer:CreateCustomer){
-    return this.authService.CustomerSignup(dtouser,dtocustomer);
+  Customersignup(@Body() dtouser:CreateAuthDto){
+    return this.authService.CustomerSignup(dtouser);
   }
 
   @Post('signin')
