@@ -14,9 +14,6 @@ export class AuthService {
   constructor(private prisma: PrismaService,private jwtService:JwtService, private config:ConfigService) {}
 
  
-
-
-
 // ADMIN SIGNUP
   async adminsignup(dto: CreateAuthDto): Promise<Tokens> {
     const hash=await argon2.hash(dto.password)
@@ -92,7 +89,6 @@ export class AuthService {
 
 
   async signin(dto:CreateAuthDto): Promise<Tokens>  {
-    console.log(this.prisma, "here in file service to see file");
 
     try{
  

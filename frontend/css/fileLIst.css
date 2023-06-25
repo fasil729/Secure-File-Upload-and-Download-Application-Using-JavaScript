@@ -1,0 +1,24 @@
+body{
+    background: #93a8ac;
+}
+
+#file_list{
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    column-gap: 20px;
+    row-gap: 20px;
+}
+
+a {
+    text-decoration: none;
+    color: #9b6a6c;
+}
+
+.img_value{
+    width: 17.9rem;
+    border-radius: 4px;
+}
+.btn, .btn:hover {
+    background-color: #424B54;
+    color: #fff
+}
