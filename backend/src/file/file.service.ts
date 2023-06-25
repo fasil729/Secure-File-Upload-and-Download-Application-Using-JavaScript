@@ -1,15 +1,21 @@
 import { PrismaService } from "src/Prisma/prisma.service";
 import { File } from './model';
+import { Injectable } from "@nestjs/common";
+
+
 
 // Define file service
+@Injectable()
 export class FileService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private prisma: PrismaService) {}
   
     async getFileById(id: number): Promise<File> {
       return this.prisma.file.findUnique({ where: { id } });
     }
   
     async createFile(name: string, originalname: string, senderId: number, receiverId: number, contentType: string, size: number): Promise<File> {
+      
+      
       return this.prisma.file.create({
         data: {
           name,

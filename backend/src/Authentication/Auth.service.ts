@@ -11,7 +11,7 @@ import { JwtPayload, Tokens } from "./types";
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService,private jwtService:JwtService,private config:ConfigService) {}
+  constructor(private prisma: PrismaService,private jwtService:JwtService, private config:ConfigService) {}
 
  
 
@@ -80,7 +80,7 @@ export class AuthService {
 
 
   async signin(dto:CreateAuthDto): Promise<Tokens>  {
-
+    console.log(this.prisma, "here in file service to see file");
 
     try{
  
