@@ -20,7 +20,15 @@ form.addEventListener('submit', function(e){
     }).then(function(response){
         return response.json()
     }).then(function(data){
-        console.log("logging data");
+        if (data.statusCode == 403){
+            document.getElementById('wrong').innerHTML = 'Email or password not correct!'
+        } else {
+            console.log("logging data");
         console.log(data);
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('refresh_token', data.refresh_token);
+        window.open('fileList.html', '_self');
+        }
     })
+
 })

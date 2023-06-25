@@ -18,8 +18,6 @@ export class CreateAuthDto{
   @IsString()
   @IsNotEmpty()
   password: string;
-  
-  
 }
 
 

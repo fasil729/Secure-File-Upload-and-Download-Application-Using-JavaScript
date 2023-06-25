@@ -19,7 +19,6 @@ export class updateAuthDto{
   @IsNotEmpty()
   password: string;
   
-  
 }
 
 

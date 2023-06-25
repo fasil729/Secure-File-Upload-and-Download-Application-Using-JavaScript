@@ -50,25 +50,37 @@ export class AuthService {
   // Customer Signup
   async CustomerSignup(createUserDto:CreateAuthDto): Promise<Tokens> {
     const hash = await argon2.hash(createUserDto.password);
-    // const role=User.Roles
-    const NewUser = await this.prisma.user.create({ 
-      data: {
+    const existingUser = await this.prisma.user.findUnique({
+      where: {
         email: createUserDto.email,
-         firstName: createUserDto.firstName,
-         lastName: createUserDto.lastName,
-        hash: hash,
-        role: 'USER',
-        },
-      
+      },
     });
-   
-    const tokens = await this.GetToken(
-      NewUser.id,
-    NewUser.email,
-    NewUser.role
+    if (!existingUser){
+      const NewUser = await this.prisma.user.create({ 
+        data: {
+          email: createUserDto.email,
+           firstName: createUserDto.firstName,
+           lastName: createUserDto.lastName,
+          hash: hash,
+          role: 'USER',
+          },
+        
+      });
+     
+      const tokens = await this.GetToken(
+        NewUser.id,
+      NewUser.email,
+      NewUser.role
+      );
+      await this.updateRtHash(NewUser.id, tokens.refresh_token);
+      return tokens;
+    } else{
+      throw new ForbiddenException(
+        'Credentials taken',
     );
-    await this.updateRtHash(NewUser.id, tokens.refresh_token);
-    return tokens;
+    }
+    // const role=User.Roles
+    
   }
 
 
