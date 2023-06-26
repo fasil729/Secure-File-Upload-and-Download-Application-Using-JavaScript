@@ -117,7 +117,7 @@ async uploadFile(
   const fileBuffer = Buffer.from(decryptedData);
   console.log("final download decrypted data", fileBuffer);
     // Set appropriate file permissions
-    const filePath = path.join(__dirname, '..', '..', 'filestorage', file.originalname);
+    const filePath = path.join(__dirname, '../../../', 'filestorage', file.originalname);
     fs.writeFileSync(filePath, decryptedData);
     const hmac = crypto.createHmac('sha256', this.encryptionKey)
     .update(decryptedData)
@@ -141,7 +141,7 @@ async uploadFile(
   }
 
 // to show the file on the browser not download
-@Get(':id')
+@Get(':id/retrieve')
 @UseGuards(AtGuards)
 async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @Res() res: Response) {
   
@@ -199,7 +199,7 @@ async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @
     }
 
     // Delete file from the database and file system
-    const filePath = path.join(__dirname, '..', 'filestorage', file.name);
+    const filePath = path.join(__dirname, '../../../', 'filestorage', file.name);
     await this.fileService.deleteFileById(id);
     fs.unlinkSync(filePath);
   }
@@ -207,16 +207,13 @@ async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @
 
 
 
-  @Get('action_logs')
+  @Get('/action_logs')
   @UseGuards(AtGuards, RolesGuard)
   @Roles(Role.ADMIN)
-  async retrieveFileLogs(@Param('id', ParseIntPipe) id: number) {
+  async retrieveFileLogs() {
    
     const actionLogs = await this.fileService.getActionLogs();
 
-    return {
-  
-      actionLogs
-    };
+    return actionLogs
   }
 }

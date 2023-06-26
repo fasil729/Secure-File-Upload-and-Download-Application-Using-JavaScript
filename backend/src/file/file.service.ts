@@ -50,21 +50,30 @@ export class FileService {
         data: {
           action: actionLog.action,
           timestamp: actionLog.timestamp,
-          file: {
-            connect: { id: actionLog.file.id },
-          },
+          fileId: file.id,
           
           actionerId: actionLog.actionerId,
         },
+        include: {
+          file: true
+        }
       });
     }
   
-    async getActionLogs(): Promise<ActionLog[]> {
+    async getActionLogs(): Promise<File[]> {
+      console.log("here in get action_logs");
       return this.prisma.file.findMany({
        
         
         include: {
-          actionLogs: true,
+          sender: true,
+          receiver:true,
+          actionLogs:  {
+            include: {
+              actioner: true,
+              file: true
+            }
+          },
         },
       });
     }

@@ -27,7 +27,14 @@ form.addEventListener('submit', function(e){
         console.log(data);
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('refresh_token', data.refresh_token);
-        window.open('fileList.html', '_self');
+        
+        if (data.role == "USER") {
+            window.open('fileList.html', '_self');
+        }
+        else if (data.role == "ADMIN") {
+            window.open('adminpanel.html', '_self');
+        }
+        
         }
     })
 

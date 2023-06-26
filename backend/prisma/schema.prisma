@@ -19,6 +19,7 @@ model User {
   role           UserRole @default(USER)
   sentFiles      File[]   @relation("sentFiles")
   receivedFiles  File[]   @relation("receivedFiles")
+  action_logs    ActionLog[]
 }
 
 enum UserRole {
