@@ -2,6 +2,7 @@
   "dependencies": {
     "@nestjs/passport": "^10.0.0",
     "@prisma/client": "^4.16.1",
+    "buffer": "^6.0.3",
     "prisma": "^4.16.1"
   },
   "devDependencies": {

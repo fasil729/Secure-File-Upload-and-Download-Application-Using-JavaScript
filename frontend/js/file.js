@@ -4,7 +4,7 @@ const token = localStorage.getItem('access_token');
 
 
 
-fetch('http://localhost:3000/file/received', {
+fetch("http://localhost:3000/file/received", {
     method: 'GET',
     headers:{
         "Content-Type": "application/json",
@@ -98,4 +98,4 @@ async function downloadFile(id) {
     console.error('Failed to download file:', error);
   }
 };
-window.stop()
+// window.stop()

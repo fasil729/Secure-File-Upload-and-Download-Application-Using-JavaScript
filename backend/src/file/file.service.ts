@@ -31,43 +31,43 @@ export class FileService {
         
       });
 
-      await this.createActionLog('updload', senderId, file.id);
+      // await this.createActionLog('updload', senderId, file.id);
       return file
     }
 
-    async createActionLog(action: string, actionerId: number, fileId: number): Promise<ActionLog> {
-      const actioner = await this.prisma.user.findUnique({
-        where: { id: actionerId },
-      });
+  //   async createActionLog(action: string, actionerId: number, fileId: number): Promise<ActionLog> {
+  //     const actioner = await this.prisma.user.findUnique({
+  //       where: { id: actionerId },
+  //     });
   
-      const file = await this.prisma.file.findUnique({
-        where: { id: fileId },
-      });
+  //     const file = await this.prisma.file.findUnique({
+  //       where: { id: fileId },
+  //     });
   
-      const actionLog = new ActionLog(action, file, actionerId);
+  //     const actionLog = new ActionLog(action, file, actionerId);
   
-      return this.prisma.actionLog.create({
-        data: {
-          action: actionLog.action,
-          timestamp: actionLog.timestamp,
-          file: {
-            connect: { id: actionLog.file.id },
-          },
+  //     return this.prisma.actionLog.create({
+  //       data: {
+  //         action: actionLog.action,
+  //         timestamp: actionLog.timestamp,
+  //         file: {
+  //           connect: { id: actionLog.file.id },
+  //         },
           
-          actionerId: actionLog.actionerId,
-        },
-      });
-    }
+  //         actionerId: actionLog.actionerId,
+  //       },
+  //     });
+  //   }
   
-    async getActionLogs(): Promise<ActionLog[]> {
-      return this.prisma.file.findMany({
+  //   async getActionLogs(): Promise<ActionLog[]> {
+  //     return this.prisma.file.findMany({
        
         
-        include: {
-          actionLogs: true,
-        },
-      });
-    }
+  //       include: {
+  //         actionLogs: true,
+  //       },
+  //     });
+  //   }
   
   
     async deleteFileById(id: number): Promise<void> {
@@ -77,4 +77,4 @@ export class FileService {
     async getFilesByReceiverId(receiverId: number): Promise<File[]> {
       return this.prisma.file.findMany({ where: { receiverId } });
     }
-  }
+}

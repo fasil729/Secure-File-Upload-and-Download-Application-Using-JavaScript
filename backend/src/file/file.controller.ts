@@ -1,4 +1,4 @@
-import { Module, Controller, Post, UploadedFile, UseGuards, Get, Param, Res, Delete, UseInterceptors, BadRequestException, NotFoundException, UnauthorizedException, ParseIntPipe, Headers } from '@nestjs/common';
+import { Module, Controller, Post, UploadedFile, UseGuards, Get, Param, Res, Delete, UseInterceptors, BadRequestException, NotFoundException, UnauthorizedException, ParseIntPipe, Headers, UseFilters, HttpException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage, Multer } from 'multer';
 import * as crypto from 'crypto';
@@ -13,13 +13,14 @@ import { Roles } from 'src/decorators/role.auths';
 import { Role } from '../decorators/role.enum';
 import { Response } from 'express';
 import { File } from './model';
+import { FileValidationFilter } from './file.badResponse';
 
 // Define file upload options
 const uploadOptions = {
-
   fileFilter: (req, file, cb) => {
     if (!file.originalname.match(/\.(pdf|jpg|jpeg|png|gif)$/)) {
-      return cb(new BadRequestException('Only PDF and image files are allowed!'));
+      console.log("not allowing format")
+      return cb(new HttpException('Only PDF and image files are allowed!', 400), false);
     }
     cb(null, true);
   },
@@ -36,8 +37,9 @@ export class FileController {
 
   @Post('/upload/:receiverId')
 @UseGuards(AtGuards, RolesGuard)
-@UseInterceptors(FileInterceptor('file', uploadOptions))
+@UseInterceptors(FileInterceptor('file'))
 @Roles(Role.USER)
+// @UseFilters(FileValidationFilter)
 async uploadFile(
   @UploadedFile() file: Multer.File,
   @GetUser() user: number,
@@ -49,20 +51,30 @@ async uploadFile(
     // Validate and sanitize input
     if (!file) {
       throw new BadRequestException('No file provided!');
+    }
 
+    if (!file.originalname.match(/\.(pdf|jpg|jpeg|png|gif)$/)) {
+      throw new BadRequestException('Only PDF and image files are allowed!');
+    }
+
+    if(file.size > 1024 * 1024 * 10){
+      throw new BadRequestException('Only files less than 10 MB are allowed!')
     }
     const encryptionKey = Buffer.from('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'hex');
     // Calculate HMAC to check file integrity
-    const hmac = crypto.createHmac('sha256', encryptionKey);
-    hmac.update(file.buffer);
-    const calculatedChecksum = hmac.digest('hex');
-
-    // Verify file integrity
-    if (calculatedChecksum !== fileHMAC) {
-      throw new BadRequestException('File integrity check failed!');
-    }
-    console.log("original buffer")
-    console.log(file.buffer);
+    // const hmac = crypto.createHmac('sha256', encryptionKey);
+    // hmac.update(file.buffer);
+    // const calculatedChecksum = hmac.digest('hex');
+    // console.log("checksum",calculatedChecksum);
+    // console.log("fiel mac")
+    // console.log(file.buffer)
+    // console.log(fileHMAC)
+    // // Verify file integrity
+    // if (calculatedChecksum !== fileHMAC) {
+    //   throw new BadRequestException('File integrity check failed!');
+    // }
+    // console.log("original buffer")
+    // console.log(file.buffer);
     const cipher = crypto.createCipheriv('aes-256-cbc', this.encryptionKey, this.iv);
     let encryptedData = cipher.update(file.buffer);
     encryptedData = Buffer.concat([encryptedData, cipher.final()]);
@@ -92,7 +104,7 @@ async uploadFile(
   async downloadFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @Res() res: Response) {
 
     // create action_logs
-    await this.fileService.createActionLog('download', user['id'], id);
+    // await this.fileService.createActionLog('download', user['id'], id);
     // Find file by ID
     const file = await this.fileService.getFileById(id);
   
@@ -117,7 +129,7 @@ async uploadFile(
   const fileBuffer = Buffer.from(decryptedData);
   console.log("final download decrypted data", fileBuffer);
     // Set appropriate file permissions
-    const filePath = path.join(__dirname, '..', '..', 'filestorage', file.originalname);
+    const filePath = path.join(__dirname, '../../../', 'filestorage', file.originalname);
     fs.writeFileSync(filePath, decryptedData);
     const hmac = crypto.createHmac('sha256', this.encryptionKey)
     .update(decryptedData)
@@ -146,7 +158,7 @@ async uploadFile(
 async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @Res() res: Response) {
   
   // create action_logs
-  await this.fileService.createActionLog('retrieve', user['id'], id);
+  // await this.fileService.createActionLog('retrieve', user['id'], id);
   
   // Find file by ID
   const file = await this.fileService.getFileById(id);
@@ -186,7 +198,7 @@ async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @
   async deleteFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number) {
 
     // create action_logs
-    await this.fileService.createActionLog('delete', user['id'], id);
+    // await this.fileService.createActionLog('delete', user['id'], id);
     // Find file by ID
     const file = await this.fileService.getFileById(id);
 
@@ -207,16 +219,16 @@ async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @
 
 
 
-  @Get('action_logs')
-  @UseGuards(AtGuards, RolesGuard)
-  @Roles(Role.ADMIN)
-  async retrieveFileLogs(@Param('id', ParseIntPipe) id: number) {
+  // @Get('action_logs')
+  // @UseGuards(AtGuards, RolesGuard)
+  // @Roles(Role.ADMIN)
+  // async retrieveFileLogs(@Param('id', ParseIntPipe) id: number) {
    
-    const actionLogs = await this.fileService.getActionLogs();
+  //   const actionLogs = await this.fileService.getActionLogs();
 
-    return {
+  //   return {
   
-      actionLogs
-    };
-  }
+  //     actionLogs
+  //   };
+  // }
 }

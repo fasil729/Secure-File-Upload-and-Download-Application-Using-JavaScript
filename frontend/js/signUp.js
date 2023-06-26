@@ -28,10 +28,12 @@ form.addEventListener('submit', function(e){
         "Content-Type": "application/json",
     }
 }).then(function (response) {
-    return response.json()}).then(function(data) {
-        if (data.statusCode == 201){
+    console.log(response);
+    return response}).then(data => {
+        if (data.status == 201){
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('refresh_token', data.refresh_token);
+        window.open('home.html', '_self');
         } else {
             document.getElementById('wrong').innerHTML = 'User Already Exists!'
         }

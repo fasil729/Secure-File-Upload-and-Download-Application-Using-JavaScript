@@ -8,17 +8,18 @@ datasource db {
 }
 
 model User {
-  id             Int      @id @default(autoincrement())
-  firstName      String
-  lastName       String
-  email          String   @unique
-  hash           String
-  hashRT         String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  role           UserRole @default(USER)
-  sentFiles      File[]   @relation("sentFiles")
-  receivedFiles  File[]   @relation("receivedFiles")
+  id            Int         @id @default(autoincrement())
+  firstName     String
+  lastName      String
+  email         String      @unique
+  hash          String
+  hashRT        String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  role          UserRole    @default(USER)
+  sentFiles     File[]      @relation("sentFiles")
+  receivedFiles File[]      @relation("receivedFiles")
+  ActionLog     ActionLog[]
 }
 
 enum UserRole {
@@ -27,27 +28,27 @@ enum UserRole {
 }
 
 model File {
-  id             Int       @id @default(autoincrement())
-  name           String
-  originalname   String
-  checksum       String
-  encryptionKey  String
-  createdAt      DateTime  @default(now())
-  senderId       Int
-  receiverId     Int
-  sender         User      @relation("sentFiles", fields: [senderId], references: [id])
-  receiver       User      @relation("receivedFiles", fields: [receiverId], references: [id])
-  contentType    String
-  size           Int
-  actionLogs     ActionLog[]
+  id            Int         @id @default(autoincrement())
+  name          String
+  originalname  String
+  checksum      String
+  encryptionKey String
+  createdAt     DateTime    @default(now())
+  senderId      Int
+  receiverId    Int
+  sender        User        @relation("sentFiles", fields: [senderId], references: [id])
+  receiver      User        @relation("receivedFiles", fields: [receiverId], references: [id])
+  contentType   String
+  size          Int
+  actionLogs    ActionLog[]
 }
 
 model ActionLog {
-  id          Int     @id @default(autoincrement())
-  action      String
-  timestamp   DateTime @default(now())
-  fileId      Int
-  file        File    @relation(fields: [fileId], references: [id])
-  actionerId  Int
-  actioner    User    @relation(fields: [actionerId], references: [id])
+  id         Int      @id @default(autoincrement())
+  action     String
+  timestamp  DateTime @default(now())
+  fileId     Int
+  file       File     @relation(fields: [fileId], references: [id])
+  actionerId Int
+  actioner   User     @relation(fields: [actionerId], references: [id])
 }

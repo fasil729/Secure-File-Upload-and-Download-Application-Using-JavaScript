@@ -1,13 +1,14 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prettier/prettier */
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, Req, UseGuards} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, Query, Req, RequestMapping, UseGuards} from '@nestjs/common';
 import { AuthService } from './Auth.service';
 import { CreateAuthDto, updateAuthDto } from './dto';
 import { GetUser, GetUserId } from 'src/decorators';
 
 import {  AtGuards } from './gaurds/at.guards';
 import { RolesGuard } from './gaurds/role.gaurd';
+import { GetId } from './dto/auth.get.dto';
 
 
 @Controller('user')
@@ -39,11 +40,15 @@ export class AuthController{
   }
 
 
-
 @UseGuards(AtGuards, RolesGuard)
 @Get()
 getProfile(@GetUser() userId: number){
   return this.authService.getProfile(userId['id']);
+}
+
+@Get('find')
+getUserIdByEmail(@Query() dtouser: GetId){
+  return this.authService.getUserIdByEmail(dtouser);
 }
 
 

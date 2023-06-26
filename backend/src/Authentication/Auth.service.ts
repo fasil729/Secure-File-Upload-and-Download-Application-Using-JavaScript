@@ -6,6 +6,7 @@ import * as argon2 from "argon2";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { JwtPayload, Tokens } from "./types";
+import { GetId } from "./dto/auth.get.dto";
 
 
 
@@ -148,6 +149,15 @@ async getProfile(id:number){
   })
   return user;
 
+}
+
+async getUserIdByEmail(dtoUser: GetId) {
+  const user = await this.prisma.user.findUnique({
+    where: {
+      email: dtoUser.email
+    }
+  })
+  return user;
 }
 
  async edit_costumer(id:number, dtouser) {

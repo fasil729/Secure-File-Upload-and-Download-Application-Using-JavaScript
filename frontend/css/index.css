@@ -7,6 +7,7 @@
     min-height: 100vh;
     background: #93a8ac;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     font-family: Arial, Helvetica, sans-serif;
@@ -35,7 +36,7 @@
     gap: 30px;
     justify-content: center;
   }
-  .file-upload__wrapper form.file-upload__form {
+  .file-upload__wrapper .file-upload__form {
     height: 150px;
     border: 2px dashed #93a8ac;
     cursor: pointer;
