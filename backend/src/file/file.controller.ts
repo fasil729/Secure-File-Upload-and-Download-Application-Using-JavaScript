@@ -153,7 +153,7 @@ async uploadFile(
   }
 
 // to show the file on the browser not download
-@Get(':id/retrieve')
+@Get(':id')
 @UseGuards(AtGuards)
 async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @Res() res: Response) {
   

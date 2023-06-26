@@ -12,6 +12,9 @@ fetch("http://localhost:3000/file/received", {
     }
 }).then((response)=>response.json()).then(async function(data){
     let listMarkup = "";
+    if (data.length == 0){
+      listMarkup = '<div class="d-flex justify-content-center align-items-center" style="color:white"> No Recieved files yet!</div>'
+    }
     for (let i = 0; i < data.length; i++){
         let img = await buildDetail(data[i].id);
         if (img == "0"){
@@ -40,6 +43,7 @@ function buildDetail(id) {
         }
       })
         .then(response => {
+          console.log(response)
           if (!response.ok) {
             throw new Error('Failed to retrieve file');
           }
