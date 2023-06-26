@@ -31,6 +31,8 @@ const uploadOptions = {
 @Controller('file')
 export class FileController {
   constructor(private fileService: FileService) {}
+  private readonly encryptionKey = '0123456789abcdef0123456789abcdef'; // 32-byte encryption key in hex format
+  private readonly iv = crypto.randomBytes(16);
 
   @Post('/upload/:receiverId')
 @UseGuards(AtGuards, RolesGuard)
@@ -59,22 +61,22 @@ async uploadFile(
     if (calculatedChecksum !== fileHMAC) {
       throw new BadRequestException('File integrity check failed!');
     }
-  
-    // Encrypt file data
-    
-    const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, iv);
+    console.log("original buffer")
+    console.log(file.buffer);
+    const cipher = crypto.createCipheriv('aes-256-cbc', this.encryptionKey, this.iv);
     let encryptedData = cipher.update(file.buffer);
     encryptedData = Buffer.concat([encryptedData, cipher.final()]);
-  
+    console.log(encryptedData);
+
     // Generate unique filename for encrypted file
+
     const encryptedFileName = crypto.randomBytes(16).toString('hex');
     const fileExt = path.extname(file.originalname);
-    const encryptedFilePath = path.join(__dirname, '..', '..', 'filestorage', encryptedFileName + fileExt);
+    const encryptedFilePath = path.join(__dirname, '../../../', 'filestorage', encryptedFileName + fileExt);
   
     // Write encrypted file to file system
     fs.writeFileSync(encryptedFilePath, encryptedData);
-    console.log(typeof user['id'], typeof receiverId, "here to see reciverid and userid");
+    //console.log(typeof user['id'], typeof receiverId, "here to see reciverid and userid");
   
     // Create new file in the database
     const newFile = await this.fileService.createFile(encryptedFileName + fileExt, file.originalname, user['id'], receiverId, file.mimetype, file.size);
@@ -84,7 +86,7 @@ async uploadFile(
   }
 
 
-  @Get(':id/download')
+  @Get('download/:id')
   @UseGuards(AtGuards, RolesGuard)
   @Roles(Role.USER)
   async downloadFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @Res() res: Response) {
@@ -101,23 +103,23 @@ async uploadFile(
     if (file.senderId !== user['id'] && file.receiverId !== user['id']) {
       throw new UnauthorizedException('You are not authorized to access this file!');
     }
-
-    const filename = path.join(__dirname, '..','..', 'filestorage', file.name);
+    const filename = path.join(__dirname, '../../../', 'filestorage', file.name);
   
     // Read encrypted file from file system
-    const encryptedData = fs.readFileSync(filename, 'utf-8');
-  
+    const encryptedData = fs.readFileSync(filename);
+
     // Decrypt file data
-    const encryptionKey = Buffer.from('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'hex');
-    const iv = crypto.randomBytes(16);
-    const decipher = crypto.createDecipheriv('aes-256-cbc', encryptionKey, iv);
-    let decryptedData = decipher.update(encryptedData, 'hex', 'utf-8');
-    decryptedData += decipher.final('utf-8');
-  
+    const decipher = crypto.createDecipheriv('aes-256-cbc', this.encryptionKey, this.iv);
+  let decryptedData = decipher.update(encryptedData);
+  console.log(encryptedData);
+  decryptedData = Buffer.concat([decryptedData, decipher.final()]);
+  // Set appropriate file permissions
+  const fileBuffer = Buffer.from(decryptedData);
+  console.log("final download decrypted data", fileBuffer);
     // Set appropriate file permissions
     const filePath = path.join(__dirname, '..', '..', 'filestorage', file.originalname);
     fs.writeFileSync(filePath, decryptedData);
-    const hmac = crypto.createHmac('sha256', encryptionKey)
+    const hmac = crypto.createHmac('sha256', this.encryptionKey)
     .update(decryptedData)
     .digest('hex');
     res.setHeader('Content-Type', file.contentType, 
@@ -131,11 +133,16 @@ async uploadFile(
       fs.unlinkSync(filePath);
     });
   }
-
+  @Get('received')
+  @UseGuards(AtGuards, RolesGuard)
+  @Roles(Role.USER)
+  async getReceivedFiles(@GetUser() user: Map<String, any>): Promise<File[]> {
+    return await this.fileService.getFilesByReceiverId(parseInt(user['id']));
+  }
 
 // to show the file on the browser not download
 @Get(':id')
-@UseGuards(AtGuards, RolesGuard)
+@UseGuards(AtGuards)
 async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @Res() res: Response) {
   
   // create action_logs
@@ -152,21 +159,17 @@ async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @
     throw new UnauthorizedException('You are not authorized to access this file!');
   }
 
-  const filename = path.join(__dirname, '..', '..', 'filestorage', file.name);
-
+  const filename = path.join(__dirname, '../../../', 'filestorage', file.name);
   // Read encrypted file from file system
-  const encryptedData = fs.readFileSync(filename, 'utf-8');
+  const encryptedData = fs.readFileSync(filename);
 
-  // Decrypt file data
-  const encryptionKey = Buffer.from('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'hex');
-  const iv = crypto.randomBytes(16);
-  const decipher = crypto.createDecipheriv('aes-256-cbc', encryptionKey, iv);
-  let decryptedData = decipher.update(encryptedData, 'hex', 'utf-8');
-  decryptedData += decipher.final('utf-8');
-
+  const decipher = crypto.createDecipheriv('aes-256-cbc', this.encryptionKey, this.iv);
+  let decryptedData = decipher.update(encryptedData);
+  console.log(encryptedData);
+  decryptedData = Buffer.concat([decryptedData, decipher.final()]);
   // Set appropriate file permissions
-  const fileBuffer = Buffer.from(decryptedData, 'utf-8');
-  const hmac = crypto.createHmac('sha256', encryptionKey)
+  const fileBuffer = Buffer.from(decryptedData);
+  const hmac = crypto.createHmac('sha256', this.encryptionKey)
       .update(decryptedData)
       .digest('hex');
   res.setHeader('Content-Type', file.contentType, 
@@ -201,13 +204,7 @@ async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @
     fs.unlinkSync(filePath);
   }
 
-  // Get files received by authenticated user
-  @Get('received')
-  @UseGuards(AtGuards, RolesGuard)
-  @Roles(Role.USER)
-  async getReceivedFiles(@GetUser() user: number): Promise<File[]> {
-    return await this.fileService.getFilesByReceiverId(user['id']);
-  }
+
 
 
   @Get('action_logs')
