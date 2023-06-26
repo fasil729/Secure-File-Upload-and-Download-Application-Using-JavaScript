@@ -35,39 +35,48 @@ export class FileService {
       return file
     }
 
-  //   async createActionLog(action: string, actionerId: number, fileId: number): Promise<ActionLog> {
-  //     const actioner = await this.prisma.user.findUnique({
-  //       where: { id: actionerId },
-  //     });
+    async createActionLog(action: string, actionerId: number, fileId: number): Promise<ActionLog> {
+      const actioner = await this.prisma.user.findUnique({
+        where: { id: actionerId },
+      });
   
-  //     const file = await this.prisma.file.findUnique({
-  //       where: { id: fileId },
-  //     });
+      const file = await this.prisma.file.findUnique({
+        where: { id: fileId },
+      });
   
-  //     const actionLog = new ActionLog(action, file, actionerId);
+      const actionLog = new ActionLog(action, file, actionerId);
   
-  //     return this.prisma.actionLog.create({
-  //       data: {
-  //         action: actionLog.action,
-  //         timestamp: actionLog.timestamp,
-  //         file: {
-  //           connect: { id: actionLog.file.id },
-  //         },
+      return this.prisma.actionLog.create({
+        data: {
+          action: actionLog.action,
+          timestamp: actionLog.timestamp,
+          fileId: file.id,
           
-  //         actionerId: actionLog.actionerId,
-  //       },
-  //     });
-  //   }
+          actionerId: actionLog.actionerId,
+        },
+        include: {
+          file: true
+        }
+      });
+    }
   
-  //   async getActionLogs(): Promise<ActionLog[]> {
-  //     return this.prisma.file.findMany({
+    async getActionLogs(): Promise<File[]> {
+      console.log("here in get action_logs");
+      return this.prisma.file.findMany({
        
         
-  //       include: {
-  //         actionLogs: true,
-  //       },
-  //     });
-  //   }
+        include: {
+          sender: true,
+          receiver:true,
+          actionLogs:  {
+            include: {
+              actioner: true,
+              file: true
+            }
+          },
+        },
+      });
+    }
   
   
     async deleteFileById(id: number): Promise<void> {

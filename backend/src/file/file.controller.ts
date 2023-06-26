@@ -131,13 +131,13 @@ async uploadFile(
     // Set appropriate file permissions
     const filePath = path.join(__dirname, '../../../', 'filestorage', file.originalname);
     fs.writeFileSync(filePath, decryptedData);
-    const hmac = crypto.createHmac('sha256', this.encryptionKey)
-    .update(decryptedData)
-    .digest('hex');
+    // const hmac = crypto.createHmac('sha256', this.encryptionKey)
+    // .update(decryptedData)
+    // .digest('hex');
     res.setHeader('Content-Type', file.contentType, 
 
     );
-    res.setHeader('X-File-HMAC',  hmac);
+    // res.setHeader('X-File-HMAC',  hmac);
     res.download(filePath, file.originalname, (err) => {
       if (err) {
         throw new NotFoundException('File not found!');
@@ -153,7 +153,7 @@ async uploadFile(
   }
 
 // to show the file on the browser not download
-@Get(':id')
+@Get(':id/retrieve')
 @UseGuards(AtGuards)
 async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @Res() res: Response) {
   
@@ -181,13 +181,13 @@ async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @
   decryptedData = Buffer.concat([decryptedData, decipher.final()]);
   // Set appropriate file permissions
   const fileBuffer = Buffer.from(decryptedData);
-  const hmac = crypto.createHmac('sha256', this.encryptionKey)
-      .update(decryptedData)
-      .digest('hex');
+  // const hmac = crypto.createHmac('sha256', this.encryptionKey)
+  //     .update(decryptedData)
+  //     .digest('hex');
   res.setHeader('Content-Type', file.contentType, 
   
   );
-  res.setHeader('X-File-HMAC',  hmac);
+  // res.setHeader('X-File-HMAC',  hmac);
 
   res.send(fileBuffer);
 }
@@ -211,7 +211,7 @@ async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @
     }
 
     // Delete file from the database and file system
-    const filePath = path.join(__dirname, '..', 'filestorage', file.name);
+    const filePath = path.join(__dirname, '../../../', 'filestorage', file.name);
     await this.fileService.deleteFileById(id);
     fs.unlinkSync(filePath);
   }
@@ -219,16 +219,13 @@ async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @
 
 
 
-  // @Get('action_logs')
-  // @UseGuards(AtGuards, RolesGuard)
-  // @Roles(Role.ADMIN)
-  // async retrieveFileLogs(@Param('id', ParseIntPipe) id: number) {
+  @Get('/action_logs')
+  @UseGuards(AtGuards, RolesGuard)
+  @Roles(Role.ADMIN)
+  async retrieveFileLogs() {
    
-  //   const actionLogs = await this.fileService.getActionLogs();
+    const actionLogs = await this.fileService.getActionLogs();
 
-  //   return {
-  
-  //     actionLogs
-  //   };
-  // }
+    return actionLogs
+  }
 }
