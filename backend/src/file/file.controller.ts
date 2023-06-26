@@ -1,4 +1,4 @@
-import { Module, Controller, Post, UploadedFile, UseGuards, Get, Param, Res, Delete, UseInterceptors, BadRequestException, NotFoundException, UnauthorizedException, ParseIntPipe } from '@nestjs/common';
+import { Module, Controller, Post, UploadedFile, UseGuards, Get, Param, Res, Delete, UseInterceptors, BadRequestException, NotFoundException, UnauthorizedException, ParseIntPipe, Headers } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage, Multer } from 'multer';
 import * as crypto from 'crypto';
@@ -33,17 +33,35 @@ export class FileController {
   constructor(private fileService: FileService) {}
 
   @Post('/upload/:receiverId')
-  @UseGuards(AtGuards, RolesGuard)
-  @UseInterceptors(FileInterceptor('file', uploadOptions))
-  @Roles(Role.USER)
-  async uploadFile(@UploadedFile() file: Multer.File, @GetUser() user: number, @Param('receiverId', ParseIntPipe) receiverId: number) {
+@UseGuards(AtGuards, RolesGuard)
+@UseInterceptors(FileInterceptor('file', uploadOptions))
+@Roles(Role.USER)
+async uploadFile(
+  @UploadedFile() file: Multer.File,
+  @GetUser() user: number,
+  @Param('receiverId', ParseIntPipe) receiverId: number,
+  @Headers('x-file-hmac') fileHMAC: string // <- Add header name and default value
+) {
+  // Handler logic goes here
+
     // Validate and sanitize input
     if (!file) {
       throw new BadRequestException('No file provided!');
+
+    }
+    const encryptionKey = Buffer.from('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'hex');
+    // Calculate HMAC to check file integrity
+    const hmac = crypto.createHmac('sha256', encryptionKey);
+    hmac.update(file.buffer);
+    const calculatedChecksum = hmac.digest('hex');
+
+    // Verify file integrity
+    if (calculatedChecksum !== fileHMAC) {
+      throw new BadRequestException('File integrity check failed!');
     }
   
     // Encrypt file data
-    const encryptionKey = Buffer.from('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'hex');
+    
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, iv);
     let encryptedData = cipher.update(file.buffer);
@@ -70,6 +88,9 @@ export class FileController {
   @UseGuards(AtGuards, RolesGuard)
   @Roles(Role.USER)
   async downloadFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @Res() res: Response) {
+
+    // create action_logs
+    await this.fileService.createActionLog('download', user['id'], id);
     // Find file by ID
     const file = await this.fileService.getFileById(id);
   
@@ -81,7 +102,7 @@ export class FileController {
       throw new UnauthorizedException('You are not authorized to access this file!');
     }
 
-    const filename = path.join(__dirname, '..', 'filestorage', file.name);
+    const filename = path.join(__dirname, '..','..', 'filestorage', file.name);
   
     // Read encrypted file from file system
     const encryptedData = fs.readFileSync(filename, 'utf-8');
@@ -94,8 +115,15 @@ export class FileController {
     decryptedData += decipher.final('utf-8');
   
     // Set appropriate file permissions
-    const filePath = path.join(__dirname, '..', 'filestorage', file.originalname);
+    const filePath = path.join(__dirname, '..', '..', 'filestorage', file.originalname);
     fs.writeFileSync(filePath, decryptedData);
+    const hmac = crypto.createHmac('sha256', encryptionKey)
+    .update(decryptedData)
+    .digest('hex');
+    res.setHeader('Content-Type', file.contentType, 
+
+    );
+    res.setHeader('X-File-HMAC',  hmac);
     res.download(filePath, file.originalname, (err) => {
       if (err) {
         throw new NotFoundException('File not found!');
@@ -109,6 +137,10 @@ export class FileController {
 @Get(':id')
 @UseGuards(AtGuards, RolesGuard)
 async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @Res() res: Response) {
+  
+  // create action_logs
+  await this.fileService.createActionLog('retrieve', user['id'], id);
+  
   // Find file by ID
   const file = await this.fileService.getFileById(id);
 
@@ -120,7 +152,7 @@ async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @
     throw new UnauthorizedException('You are not authorized to access this file!');
   }
 
-  const filename = path.join(__dirname, '..', 'filestorage', file.name);
+  const filename = path.join(__dirname, '..', '..', 'filestorage', file.name);
 
   // Read encrypted file from file system
   const encryptedData = fs.readFileSync(filename, 'utf-8');
@@ -134,7 +166,14 @@ async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @
 
   // Set appropriate file permissions
   const fileBuffer = Buffer.from(decryptedData, 'utf-8');
-  res.setHeader('Content-Type', file.contentType);
+  const hmac = crypto.createHmac('sha256', encryptionKey)
+      .update(decryptedData)
+      .digest('hex');
+  res.setHeader('Content-Type', file.contentType, 
+  
+  );
+  res.setHeader('X-File-HMAC',  hmac);
+
   res.send(fileBuffer);
 }
   // Delete file endpoint
@@ -142,6 +181,9 @@ async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @
   @UseGuards(AtGuards, RolesGuard)
   @Roles(Role.USER)
   async deleteFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number) {
+
+    // create action_logs
+    await this.fileService.createActionLog('delete', user['id'], id);
     // Find file by ID
     const file = await this.fileService.getFileById(id);
 
@@ -165,5 +207,19 @@ async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @
   @Roles(Role.USER)
   async getReceivedFiles(@GetUser() user: number): Promise<File[]> {
     return await this.fileService.getFilesByReceiverId(user['id']);
+  }
+
+
+  @Get('action_logs')
+  @UseGuards(AtGuards, RolesGuard)
+  @Roles(Role.ADMIN)
+  async retrieveFileLogs(@Param('id', ParseIntPipe) id: number) {
+   
+    const actionLogs = await this.fileService.getActionLogs();
+
+    return {
+  
+      actionLogs
+    };
   }
 }
