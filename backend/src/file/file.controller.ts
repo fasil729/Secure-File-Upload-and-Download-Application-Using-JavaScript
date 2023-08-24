@@ -104,7 +104,7 @@ async uploadFile(
   async downloadFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @Res() res: Response) {
 
     // create action_logs
-    // await this.fileService.createActionLog('download', user['id'], id);
+    await this.fileService.createActionLog('download', user['id'], id);
     // Find file by ID
     const file = await this.fileService.getFileById(id);
   
@@ -153,12 +153,12 @@ async uploadFile(
   }
 
 // to show the file on the browser not download
-@Get(':id')
+@Get(':id/retrieve')
 @UseGuards(AtGuards)
 async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @Res() res: Response) {
   
   // create action_logs
-  // await this.fileService.createActionLog('retrieve', user['id'], id);
+  await this.fileService.createActionLog('retrieve', user['id'], id);
   
   // Find file by ID
   const file = await this.fileService.getFileById(id);
@@ -198,7 +198,7 @@ async viewFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number, @
   async deleteFile(@Param('id', ParseIntPipe) id: number, @GetUser() user: number) {
 
     // create action_logs
-    // await this.fileService.createActionLog('delete', user['id'], id);
+    await this.fileService.createActionLog('delete', user['id'], id);
     // Find file by ID
     const file = await this.fileService.getFileById(id);
 

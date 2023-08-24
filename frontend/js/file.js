@@ -35,7 +35,7 @@ fetch("http://localhost:3000/file/received", {
 
 function buildDetail(id) {
     return new Promise((resolve, reject) => {
-      fetch('http://localhost:3000/file/' + id, {
+      fetch('http://localhost:3000/file/' + id + '/retrieve', {
         method: 'GET',
         headers: {
           "Content-Type": "application/json",

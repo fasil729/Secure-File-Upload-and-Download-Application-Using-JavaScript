@@ -31,7 +31,7 @@ export class FileService {
         
       });
 
-      // await this.createActionLog('updload', senderId, file.id);
+      await this.createActionLog('updload', senderId, file.id);
       return file
     }
 

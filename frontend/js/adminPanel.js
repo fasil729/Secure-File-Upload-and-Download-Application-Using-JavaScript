@@ -37,15 +37,17 @@ fetch(apiUrl, {
 
     const actionLogsCell = document.createElement('td');
     const actionLogsList = document.createElement('ul');
-    if (!fileMetadata.actionLog) {
+    
+    if (fileMetadata.actionLogs.length === 0) {
+      console.log(fileMetadata.actionLogs, "here actionlogs");
       const actionLogItem = document.createElement('li');
       actionLogItem.textContent = `there is no action logs`;
       actionLogsList.appendChild(actionLogItem);
     }
     else {
-    fileMetadata.actionLog.forEach(actionLog => {
+    fileMetadata.actionLogs.forEach(actionLog => {
       const actionLogItem = document.createElement('li');
-      actionLogItem.textContent = `${actionLog.actioner.firsName} ${actionLog.action} ${actionLog.timestamp.toLocaleString('en-GB')}`;
+      actionLogItem.textContent = `${actionLog.actioner.firstName} is ${actionLog.action} at  ${actionLog.timestamp.toLocaleString('en-GB')}`;
       actionLogsList.appendChild(actionLogItem);
     });
   }
